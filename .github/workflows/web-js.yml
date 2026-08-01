@@ -1,0 +1,48 @@
+# Guards the hand-written web JS binding layer (web/js).
+#
+# The load test and the import-graph test need no npm install, so they run first
+# and stay green even if dependency installation is unavailable. The lint step adds
+# import/no-cycle, which is the rule that keeps the package's entry point from
+# throwing `Cannot access '<enum>' before initialization` at import time.
+#
+# FFmpegKitBindings.cpp is in the trigger paths because the test suite asserts on it
+# too: the embind signatures decide what the JS boundary actually receives, and a
+# change there can break the JS API without touching a single .js file.
+
+name: web-js
+
+on:
+  push:
+    paths:
+      - 'web/js/**'
+      - 'web/test/**'
+      - 'web/src/FFmpegKitBindings.cpp'
+      - 'web/package.json'
+      - 'web/eslint.config.mjs'
+      - '.github/workflows/web-js.yml'
+  pull_request:
+    paths:
+      - 'web/js/**'
+      - 'web/test/**'
+      - 'web/src/FFmpegKitBindings.cpp'
+      - 'web/package.json'
+      - 'web/eslint.config.mjs'
+      - '.github/workflows/web-js.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Test
+        run: npm test
+      - name: Install lint dependencies
+        run: npm install --no-audit --no-fund
+      - name: Lint (includes import/no-cycle)
+        run: npm run lint

@@ -311,6 +311,30 @@ The following table shows Android API level, iOS/iPadOS deployment target and ma
     FFmpegKitConfig.setFontDirectoryList(["/system/fonts", "/System/Library/Fonts", "<folder with fonts>"]);
     ```
 
+11. (Android) Get the camera ids supported by the native camera input.
+
+    ```dart
+    FFmpegKitConfig.getSupportedCameraIds().then((cameraIds) {
+      cameraIds.forEach((cameraId) {
+        print("Camera id: $cameraId");
+      });
+    });
+    ```
+
+12. Use the Flutter API from an isolate.
+
+    ```dart
+    import 'package:flutter/services.dart';
+
+    Future<void> ffmpegWorker(RootIsolateToken rootIsolateToken) async {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
+      await FFmpegKitConfig.init(printLoadConfirmation: false);
+
+      final session = await FFmpegKit.execute('-version');
+      final output = await session.getOutput();
+    }
+    ```
+
 ### 4. Test Application
 
 You can see how `FFmpegKitNext` is used inside an application by running `flutter` test applications developed under

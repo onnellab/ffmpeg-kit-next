@@ -1,6 +1,6 @@
-# ffmpeg-kit-next 8.1.0 configure.ac
+# ffmpeg-kit-next 8.1.1 configure.ac
 
-AC_INIT([ffmpeg-kit-next], [8.1.0], [https://github.com/arthenica/ffmpeg-kit-next/issues/new])
+AC_INIT([ffmpeg-kit-next], [8.1.1], [https://github.com/arthenica/ffmpeg-kit-next/issues/new])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/FFmpegKit.cpp])
 
@@ -39,7 +39,7 @@ AC_CHECK_HEADERS([libavformat/avformat.h libavcodec/avcodec.h libavfilter/avfilt
   AC_MSG_ERROR([unable to find ffmpeg headers])
 ])
 AC_CHECK_HEADERS([rapidjson/document.h], [], [
-  AC_MSG_ERROR([unable to find rapidjson headers. rapidjson is downloaded by scripts/start-linux.sh and passed via CXXFLAGS])
+  AC_MSG_ERROR([unable to find rapidjson headers. rapidjson is downloaded by linux.sh and passed via CXXFLAGS])
 ])
 AC_CHECK_HEADERS([fcntl.h limits.h stdint.h stdlib.h string.h sys/ioctl.h sys/time.h termios.h unistd.h])
 

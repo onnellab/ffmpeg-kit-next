@@ -3,9 +3,10 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgsWeb.url = "github:NixOS/nixpkgs/nixos-26.05";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, nixpkgsWeb }:
     let
       systems = [
         "aarch64-darwin"
@@ -17,11 +18,18 @@
       forAllSystems = f:
         nixpkgs.lib.genAttrs systems
           (system:
-            f system (import nixpkgs {
+            f system
+            (import nixpkgs {
               inherit system;
               config = {
                 allowUnfree = true;
                 android_sdk.accept_license = true;
+              };
+            })
+            (import nixpkgsWeb {
+              inherit system;
+              config = {
+                allowUnfree = true;
               };
             }));
 
@@ -82,6 +90,7 @@
 
       toolchainShellHook = pkgs: ''
         export BISON="${pkgs.bison}/bin/bison"
+        export LIBTOOLIZE="${pkgs.libtool}/bin/libtoolize"
         export MESON="${pkgs.meson}/bin/meson"
         export SED="${pkgs.gnused}/bin/sed"
 
@@ -90,6 +99,7 @@
         unset MACOSX_DEPLOYMENT_TARGET
 
         echo -e "INFO: Using BISON at $BISON\n" >> "$PWD/build.log"
+        echo -e "INFO: Using LIBTOOLIZE at $LIBTOOLIZE\n" >> "$PWD/build.log"
         echo -e "INFO: Using MESON at $MESON\n" >> "$PWD/build.log"
         echo -e "INFO: Using SED at $SED\n" >> "$PWD/build.log"
       '';
@@ -140,8 +150,10 @@
         yasm
         gettext
         gperf
+        libtasn1
         python3
         perl
+        rsync
         ruby
       ];
 
@@ -158,7 +170,6 @@
         groff
         gtk-doc
         jdk17
-        libtasn1
         patch
         ragel
         texinfo
@@ -183,7 +194,6 @@
         gtk-doc
         patch
         ragel
-        rsync
         tcl
         texinfo
         which
@@ -192,6 +202,22 @@
         llvmPackages.lld
         llvmPackages.libclang
       ];
+
+      webToolchainPackages = pkgs: commonToolPackages pkgs ++ (with pkgs; [
+        binaryen
+        coreutils
+        emscripten
+        file
+        findutils
+        gawk
+        gnumake
+        gnugrep
+        m4
+        nodejs
+        rsync
+        texinfo
+        which
+      ]);
 
       xcodeMinCheck = minMajor: ''
         # Respect Apple's normal precedence: an explicitly-set DEVELOPER_DIR wins, then the
@@ -284,6 +310,9 @@
             export ANDROID_NDK="$ANDROID_NDK_ROOT"
             export CMAKE="${androidCmakeRoot}/bin/cmake"
 
+            # Keep JVM locale stable
+            export JAVA_TOOL_OPTIONS="''${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-Duser.language=en -Duser.country=US"
+
             export FFMPEG_KIT_NIX_ANDROID_PLATFORM="${android.platformVersion}"
             export FFMPEG_KIT_NIX_ANDROID_BUILD_TOOLS="${android.buildToolsVersion}"
             export FFMPEG_KIT_NIX_ANDROID_CMAKE="${android.cmakeVersion}"
@@ -325,12 +354,63 @@
             echo "FFmpegKit Linux ${linuxArchName pkgs} glibc ${pkgs.glibc.version} toolchain environment loaded for ${system}"
           '';
         };
+
+      webToolchainShell = system: pkgs:
+        pkgs.mkShellNoCC {
+          packages = webToolchainPackages pkgs;
+
+          shellHook = ''
+            export PATH="${pkgs.lib.makeBinPath (webToolchainPackages pkgs)}:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+            export ACLOCAL_PATH="${pkgs.gettext}/share/aclocal:$ACLOCAL_PATH"
+            export FFMPEG_KIT_WEB_TARGET="wasm32-unknown-emscripten"
+            export FFMPEG_KIT_WEB_ARCH="wasm32"
+            export FFMPEG_KIT_WEB_NIXPKGS="github:NixOS/nixpkgs/nixos-26.05"
+            export EM_CACHE="''${EM_CACHE:-$PWD/.tmp/emscripten-cache}"
+            ${toolchainShellHook pkgs}
+
+            unset CFLAGS
+            unset CXXFLAGS
+            unset CPPFLAGS
+            unset LDFLAGS
+            unset PKG_CONFIG_PATH
+            unset PKG_CONFIG_LIBDIR
+            unset CC
+            unset CXX
+            unset AR
+            unset AS
+            unset LD
+            unset NM
+            unset RANLIB
+            unset STRIP
+            unset CMAKE_INCLUDE_PATH
+            unset CMAKE_LIBRARY_PATH
+            unset CMAKE_PREFIX_PATH
+            unset NIXPKGS_CMAKE_PREFIX_PATH
+            unset NIX_CFLAGS_COMPILE
+            unset NIX_CFLAGS_COMPILE_FOR_BUILD
+            unset NIX_LDFLAGS
+            unset NIX_LDFLAGS_FOR_BUILD
+
+            mkdir -p "$EM_CACHE"
+
+            # SEED THE WRITABLE CACHE FROM THE PACKAGED EMSCRIPTEN CACHE SO THE FIRST
+            # BUILD DOES NOT HAVE TO REBUILD THE WHOLE SYSROOT OFFLINE.
+            if [ -z "$(ls -A "$EM_CACHE" 2>/dev/null)" ]; then
+              cp -r --no-preserve=mode "${pkgs.emscripten}/share/emscripten/cache/." "$EM_CACHE"/ 2>/dev/null || true
+            fi
+
+            echo "FFmpegKit Web wasm32 Emscripten environment loaded for ${system}"
+            echo -e "INFO: Using Emscripten at $(command -v emcc)\n" >> "$PWD/build.log"
+            echo -e "INFO: Using EM_CACHE at $EM_CACHE\n" >> "$PWD/build.log"
+          '';
+        };
     in
     {
-      devShells = forAllSystems (system: pkgs:
+      devShells = forAllSystems (system: pkgs: webPkgs:
         let
           androidR27dShell = androidShell system pkgs "Android NDK r27d" android.ndkVersion;
           linuxToolchainDevShell = linuxToolchainShell system pkgs;
+          webWasm32EmscriptenShell = webToolchainShell system webPkgs;
           linuxGlibcProfileName =
             if pkgs.stdenv.hostPlatform.isLinux
             then "linux-${linuxArchName pkgs}-glibc-${pkgs.lib.replaceStrings [ "." ] [ "_" ] (builtins.head (pkgs.lib.splitString "-" pkgs.glibc.version))}"
@@ -357,6 +437,7 @@
           xcode26 = xcode26Shell;
 
           "android-r27d" = androidR27dShell;
+          "web-wasm32-emscripten" = webWasm32EmscriptenShell;
         } // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           "${linuxGlibcProfileName}" = linuxToolchainDevShell;
         });

@@ -45,7 +45,7 @@ Android builds require the following tools.
 
 Use `--enable-<library name>` flag to support additional external or system libraries and
 `--disable-<architecture name>` to disable architectures you don't want to build. Use `--enable-gpl` to allow
-GPL-licensed libraries.
+GPL-licensed libraries. Use `--prefab` to add a Prefab payload to the generated AAR for native/CMake consumers.
 
 ```
 ./nix-android.sh -p android-r27d --enable-fontconfig --disable-arm-v7a-neon
@@ -59,14 +59,15 @@ All libraries created can be found under the `prebuilt` directory.
 
 - A local Maven repository is created under each `bundle-android-aar-*-maven` folder, containing the Android
   archive (`.aar`, artifact id `ffmpeg-kit-next`) and its generated POM.
+- When `--prefab` is used, the generated AAR also includes Prefab metadata and native modules.
 
 For example, a default `API Level 24` build produces:
 
 ```
 prebuilt/bundle-android-aar-24-maven/
-└── com/arthenica/ffmpeg-kit-next/6.1.2/
-    ├── ffmpeg-kit-next-6.1.2.aar
-    └── ffmpeg-kit-next-6.1.2.pom
+└── com/arthenica/ffmpeg-kit-next/8.1.1/
+    ├── ffmpeg-kit-next-8.1.1.aar
+    └── ffmpeg-kit-next-8.1.1.pom
 ```
 
 ### 3. Using
@@ -84,7 +85,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.arthenica:ffmpeg-kit-next:6.1.2'
+    implementation 'com.arthenica:ffmpeg-kit-next:8.1.1'
 }
 ```
 

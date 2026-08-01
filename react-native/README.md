@@ -291,6 +291,16 @@ separate npm packages such as `min`, `https`, `audio`, `video`, `full`, or `full
     FFmpegKitConfig.setFontDirectoryList(["/system/fonts", "/System/Library/Fonts", "<folder with fonts>"]);
     ```
 
+11. (Android) Get the camera ids supported by the native camera input.
+
+    ```js
+    FFmpegKitConfig.getSupportedCameraIds().then(cameraIds => {
+      cameraIds.forEach(cameraId => {
+        console.log(`Camera id: ${cameraId}`);
+      });
+    });
+    ```
+
 ### 4. Test Application
 
 You can see how `FFmpegKitNext` is used inside an application by running `react-native` test applications developed under
