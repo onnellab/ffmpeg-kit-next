@@ -364,7 +364,7 @@ get_ldflags() {
 
 set_toolchain_paths() {
   if [ ! -f "${FFMPEG_KIT_TMPDIR}/gas-preprocessor.pl" ]; then
-    DOWNLOAD_RESULT=$(download "https://github.com/arthenica/gas-preprocessor/raw/v20210917/gas-preprocessor.pl" "gas-preprocessor.pl" "exit")
+    DOWNLOAD_RESULT=$(download "https://github.com/arthenica/gas-preprocessor/raw/d09971fad329d32df19f5bbafe88cf2f0ed04ed7/gas-preprocessor.pl" "gas-preprocessor.pl" "exit")
     if [[ ${DOWNLOAD_RESULT} -ne 0 ]]; then
       exit 1
     fi

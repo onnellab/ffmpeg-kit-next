@@ -351,6 +351,45 @@ create_ffmpeg_kit_universal_library() {
 }
 
 #
+# 1. framework path
+# 2. framework binary name
+#
+create_framework_dsym() {
+  local FRAMEWORK_PATH="$1"
+  local FRAMEWORK_NAME="$2"
+
+  if [[ -z ${FFMPEG_KIT_DSYM_BUILD:-} ]]; then
+    return
+  fi
+
+  local FRAMEWORK_BINARY="${FRAMEWORK_PATH}/${FRAMEWORK_NAME}"
+  local DSYM_PATH="${FRAMEWORK_PATH}.dSYM"
+  local BINARY_UUIDS
+  local DSYM_UUIDS
+  local BINARY_ARCH
+
+  rm -rf "${DSYM_PATH}"
+  xcrun dsymutil "${FRAMEWORK_BINARY}" -o "${DSYM_PATH}" 1>>"${BASEDIR}"/build.log 2>&1 || exit_framework "${FRAMEWORK_NAME} dSYM"
+
+  BINARY_UUIDS="$(xcrun dwarfdump --uuid "${FRAMEWORK_BINARY}" | awk '{print $2}' | LC_ALL=C sort)"
+  DSYM_UUIDS="$(xcrun dwarfdump --uuid "${DSYM_PATH}" | awk '{print $2}' | LC_ALL=C sort)"
+
+  if [[ -z "${BINARY_UUIDS}" ]] || [[ "${BINARY_UUIDS}" != "${DSYM_UUIDS}" ]]; then
+    echo -e "ERROR: UUID mismatch for ${FRAMEWORK_NAME}: binary=${BINARY_UUIDS} dSYM=${DSYM_UUIDS}\n" 1>>"${BASEDIR}"/build.log 2>&1
+    exit_framework "${FRAMEWORK_NAME} dSYM"
+  fi
+
+  for BINARY_ARCH in $(lipo -archs "${FRAMEWORK_BINARY}"); do
+    if ! xcrun dwarfdump --arch="${BINARY_ARCH}" --debug-info "${DSYM_PATH}" 2>>"${BASEDIR}"/build.log | awk '/DW_TAG_compile_unit/{found=1} END {exit(found ? 0 : 1)}'; then
+      echo -e "ERROR: ${FRAMEWORK_NAME} dSYM contains no DWARF compile units for ${BINARY_ARCH}\n" 1>>"${BASEDIR}"/build.log 2>&1
+      exit_framework "${FRAMEWORK_NAME} dSYM"
+    fi
+  done
+
+  echo -e "DEBUG: ${FRAMEWORK_NAME} dSYM verified with UUID(s) ${BINARY_UUIDS}\n" 1>>"${BASEDIR}"/build.log 2>&1
+}
+
+#
 # 1. architecture variant
 #
 create_ffmpeg_framework() {
@@ -455,6 +494,7 @@ create_ffmpeg_framework() {
     fi
 
     build_info_plist "${FFMPEG_LIB_FRAMEWORK_RESOURCE_PATH}/Info.plist" "${FFMPEG_LIB}" "com.arthenica.ffmpegkit.${CAPITAL_CASE_FFMPEG_LIB_NAME}" "${FFMPEG_LIB_VERSION}" "${FFMPEG_LIB_VERSION}" "${ARCHITECTURE_VARIANT}"
+    create_framework_dsym "${FFMPEG_LIB_FRAMEWORK_PATH}" "${FFMPEG_LIB}"
 
     echo -e "DEBUG: ${FFMPEG_LIB} framework built for $(get_apple_architecture_variant "${ARCHITECTURE_VARIANT}") platform successfully\n" 1>>"${BASEDIR}"/build.log 2>&1
   done
@@ -535,6 +575,7 @@ create_ffmpeg_kit_framework() {
 
   build_info_plist "${FFMPEG_KIT_FRAMEWORK_RESOURCE_PATH}/Info.plist" "ffmpegkit" "com.arthenica.ffmpegkit.FFmpegKit" "${FFMPEG_KIT_VERSION}" "${FFMPEG_KIT_VERSION}" "${ARCHITECTURE_VARIANT}"
   build_modulemap "${FFMPEG_KIT_FRAMEWORK_PATH}/Modules/module.modulemap"
+  create_framework_dsym "${FFMPEG_KIT_FRAMEWORK_PATH}" "ffmpegkit"
 
   echo -e "DEBUG: ffmpeg-kit framework built for $(get_apple_architecture_variant "${ARCHITECTURE_VARIANT}") platform successfully\n" 1>>"${BASEDIR}"/build.log 2>&1
 }
@@ -554,6 +595,9 @@ create_ffmpeg_xcframework() {
       if [[ $(is_apple_architecture_variant_supported "${ARCHITECTURE_VARIANT}") -eq 1 ]]; then
         local FRAMEWORK_PATH=${BASEDIR}/prebuilt/$(get_framework_directory "${ARCHITECTURE_VARIANT}")/${FRAMEWORK_NAME}.framework
         BUILD_COMMAND+=" -framework ${FRAMEWORK_PATH}"
+        if [[ -n ${FFMPEG_KIT_DSYM_BUILD:-} ]]; then
+          BUILD_COMMAND+=" -debug-symbols ${FRAMEWORK_PATH}.dSYM"
+        fi
       fi
     done
 
@@ -590,6 +634,9 @@ create_ffmpeg_kit_xcframework() {
     if [[ $(is_apple_architecture_variant_supported "${ARCHITECTURE_VARIANT}") -eq 1 ]]; then
       local FRAMEWORK_PATH=${BASEDIR}/prebuilt/$(get_framework_directory "${ARCHITECTURE_VARIANT}")/${FRAMEWORK_NAME}.framework
       BUILD_COMMAND+=" -framework ${FRAMEWORK_PATH}"
+      if [[ -n ${FFMPEG_KIT_DSYM_BUILD:-} ]]; then
+        BUILD_COMMAND+=" -debug-symbols ${FRAMEWORK_PATH}.dSYM"
+      fi
     fi
   done
 

@@ -93,6 +93,9 @@ while [ ! $# -eq 0 ]; do
   -x | --xcframework)
     FFMPEG_KIT_XCF_BUILD="1"
     ;;
+  --dsym)
+    export FFMPEG_KIT_DSYM_BUILD="1"
+    ;;
   --spm)
     export FFMPEG_KIT_SPM_BUILD="1"
     ;;
@@ -190,6 +193,15 @@ while [ ! $# -eq 0 ]; do
   esac
   shift
 done
+
+# Apply symbol-generation flags after argument parsing so later --extra-*flags
+# cannot silently disable dSYM generation. Optimization remains unchanged.
+if [[ -n ${FFMPEG_KIT_DSYM_BUILD:-} ]]; then
+  export FFMPEG_KIT_DSYM_FLAGS="-g"
+  export EXTRA_CFLAGS="${EXTRA_CFLAGS} ${FFMPEG_KIT_DSYM_FLAGS}"
+  export EXTRA_CXXFLAGS="${EXTRA_CXXFLAGS} ${FFMPEG_KIT_DSYM_FLAGS}"
+  export EXTRA_LDFLAGS="${EXTRA_LDFLAGS} ${FFMPEG_KIT_DSYM_FLAGS}"
+fi
 
 # PROCESS FULL OPTION AS LAST OPTION
 if [[ -n ${BUILD_FULL} ]]; then

@@ -1,0 +1,73 @@
+name: Build iOS audio XCFrameworks with dSYMs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 360
+    steps:
+      - name: Check out pinned source
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
+        with:
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41
+
+      - name: Build the Melivra audio profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./nix-ios.sh -p xcode26 -x --dsym --jobs=3 \
+            --target=12.1 \
+            --disable-arm64e \
+            --disable-arm64-mac-catalyst \
+            --disable-x86-64-mac-catalyst \
+            --enable-lame \
+            --enable-libilbc \
+            --enable-libvorbis \
+            --enable-opencore-amr \
+            --enable-opus \
+            --enable-shine \
+            --enable-soxr \
+            --enable-speex \
+            --enable-twolame \
+            --enable-vo-amrwbenc \
+            --enable-ios-zlib \
+            --enable-ios-libiconv
+
+      - name: Verify frameworks and dSYMs
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle_dir="$(find prebuilt -mindepth 1 -maxdepth 1 -type d -name 'bundle-apple-xcframework-ios-*' -print -quit)"
+          test -n "${bundle_dir}"
+          tools/apple/verify-xcframework-dsyms.sh "${bundle_dir}"
+
+          if rg -n -- '--enable-(gpl|nonfree)|enable-(x264|x265|xvidcore|libvidstab|rubberband)' build.log; then
+            echo 'error: GPL or non-free configuration detected' >&2
+            exit 1
+          fi
+
+          mkdir -p dist
+          cp build.log dist/build.log
+          cp flake.lock LICENSE scripts/source.sh dist/
+          git rev-parse HEAD > dist/source-commit.txt
+          xcodebuild -version > dist/xcode-version.txt
+          sw_vers > dist/macos-version.txt
+          xcrun --sdk iphoneos --show-sdk-version > dist/iphoneos-sdk-version.txt
+          ditto -c -k --sequesterRsrc --keepParent "${bundle_dir}" dist/ffmpeg-kit-next-8.1.1-audio-ios-dsyms.zip
+          shasum -a 256 dist/ffmpeg-kit-next-8.1.1-audio-ios-dsyms.zip > dist/SHA256SUMS
+
+      - name: Upload verified artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ffmpeg-kit-next-8.1.1-audio-ios-dsyms
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30

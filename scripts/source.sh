@@ -8,8 +8,8 @@ get_library_source() {
   case $1 in
   config)
     SOURCE_REPO_URL="https://github.com/arthenica/gnu-config"
-    SOURCE_ID="v20210814"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="805517123cbfe33d17c989a18e78c5789fab0437"
+    SOURCE_TYPE="COMMIT"
     ;;
   chromaprint)
     SOURCE_REPO_URL="https://github.com/arthenica/chromaprint"
@@ -33,8 +33,8 @@ get_library_source() {
     ;;
   ffmpeg)
     SOURCE_REPO_URL="https://github.com/arthenica/FFmpeg"
-    SOURCE_ID="n8.1.2"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="38b88335f99e76ed89ff3c93f877fdefce736c13"
+    SOURCE_TYPE="COMMIT"
     ;;
   fontconfig)
     SOURCE_REPO_URL="https://github.com/arthenica/fontconfig"
@@ -83,8 +83,8 @@ get_library_source() {
     ;;
   lame)
     SOURCE_REPO_URL="https://github.com/arthenica/lame"
-    SOURCE_ID="RELEASE__3_100"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="b8f6b9e0fdbfb6fecfc106e8d24af240eac44b22"
+    SOURCE_TYPE="COMMIT"
     ;;
   leptonica)
     SOURCE_REPO_URL="https://github.com/arthenica/leptonica"
@@ -113,8 +113,8 @@ get_library_source() {
     ;;
   libilbc)
     SOURCE_REPO_URL="https://github.com/arthenica/libilbc"
-    SOURCE_ID="v3.0.4"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="cd064edf2c6c104a4e1fd87b34fd24cfa6dbe401"
+    SOURCE_TYPE="COMMIT"
     ;;
   libjxl)
     SOURCE_REPO_URL="https://github.com/arthenica/libjxl"
@@ -128,8 +128,8 @@ get_library_source() {
     ;;
   libogg)
     SOURCE_REPO_URL="https://github.com/arthenica/ogg"
-    SOURCE_ID="v1.3.6"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="be05b13e98b048f0b5a0f5fa8ce514d56db5f822"
+    SOURCE_TYPE="COMMIT"
     ;;
   libpng)
     SOURCE_REPO_URL="https://github.com/arthenica/libpng"
@@ -143,8 +143,8 @@ get_library_source() {
     ;;
   libsndfile)
     SOURCE_REPO_URL="https://github.com/arthenica/libsndfile"
-    SOURCE_ID="1.2.2"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="72f6af15e8f85157bd622ed45b979025828b7001"
+    SOURCE_TYPE="COMMIT"
     ;;
   libtheora)
     SOURCE_REPO_URL="https://github.com/arthenica/theora"
@@ -163,8 +163,8 @@ get_library_source() {
     ;;
   libvorbis)
     SOURCE_REPO_URL="https://github.com/arthenica/vorbis"
-    SOURCE_ID="v1.3.7"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="0657aee69dec8508a0011f47f3b69d7538e9d262"
+    SOURCE_TYPE="COMMIT"
     ;;
   libvpx)
     SOURCE_REPO_URL="https://github.com/arthenica/libvpx"
@@ -188,8 +188,8 @@ get_library_source() {
     ;;
   opencore-amr)
     SOURCE_REPO_URL="https://github.com/arthenica/opencore-amr"
-    SOURCE_ID="v0.1.6"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="7dba8c32238418ce0b316a852b2224df586ca896"
+    SOURCE_TYPE="COMMIT"
     ;;
   openh264)
     SOURCE_REPO_URL="https://github.com/arthenica/openh264"
@@ -203,8 +203,8 @@ get_library_source() {
     ;;
   opus)
     SOURCE_REPO_URL="https://github.com/arthenica/opus"
-    SOURCE_ID="v1.5.2"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="ddbe48383984d56acd9e1ab6a090c54ca6b735a6"
+    SOURCE_TYPE="COMMIT"
     ;;
   rapidjson)
     SOURCE_REPO_URL="https://github.com/arthenica/rapidjson"
@@ -223,8 +223,8 @@ get_library_source() {
     ;;
   shine)
     SOURCE_REPO_URL="https://github.com/arthenica/shine"
-    SOURCE_ID="3.1.1"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="97f188efc3dc90315b79a2af1f477c0c18d85e82"
+    SOURCE_TYPE="COMMIT"
     ;;
   snappy)
     SOURCE_REPO_URL="https://github.com/arthenica/snappy"
@@ -233,13 +233,13 @@ get_library_source() {
     ;;
   soxr)
     SOURCE_REPO_URL="https://github.com/arthenica/soxr"
-    SOURCE_ID="0.1.3"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="945b592b70470e29f917f4de89b4281fbbd540c0"
+    SOURCE_TYPE="COMMIT"
     ;;
   speex)
     SOURCE_REPO_URL="https://github.com/arthenica/speex"
-    SOURCE_ID="Speex-1.2.1"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="5dceaaf3e23ee7fd17c80cb5f02a838fd6c18e01"
+    SOURCE_TYPE="COMMIT"
     ;;
   srt)
     SOURCE_REPO_URL="https://github.com/arthenica/srt"
@@ -258,13 +258,13 @@ get_library_source() {
     ;;
   twolame)
     SOURCE_REPO_URL="https://github.com/arthenica/twolame"
-    SOURCE_ID="0.4.0"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="bec4069996479aa1aa9d9e7fa32c33135b3a2047"
+    SOURCE_TYPE="COMMIT"
     ;;
   vo-amrwbenc)
     SOURCE_REPO_URL="https://github.com/arthenica/vo-amrwbenc"
-    SOURCE_ID="v0.1.3"
-    SOURCE_TYPE="TAG"
+    SOURCE_ID="080af7540562e4adfbd3312837fe5fc6771c4cd0"
+    SOURCE_TYPE="COMMIT"
     ;;
   vvenc)
     SOURCE_REPO_URL="https://github.com/arthenica/vvenc"
