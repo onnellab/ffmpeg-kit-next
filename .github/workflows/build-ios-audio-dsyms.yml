@@ -23,6 +23,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          build_status=0
           ./nix-ios.sh -p xcode26 -x --dsym --jobs=3 \
             --target=12.1 \
             --disable-arm64e \
@@ -39,7 +40,22 @@ jobs:
             --enable-twolame \
             --enable-vo-amrwbenc \
             --enable-ios-zlib \
-            --enable-ios-libiconv
+            --enable-ios-libiconv || build_status=$?
+
+          if [[ -f build.log ]]; then
+            tools/apple/sanitize-build-log.sh build.log build-diagnostics.log
+            tail -n 500 build-diagnostics.log || true
+          fi
+          exit "${build_status}"
+
+      - name: Upload failed-build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ffmpeg-kit-next-ios-build-diagnostics
+          path: build-diagnostics.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Verify frameworks and dSYMs
         shell: bash
@@ -55,7 +71,7 @@ jobs:
           fi
 
           mkdir -p dist
-          cp build.log dist/build.log
+          tools/apple/sanitize-build-log.sh build.log dist/build.log
           cp flake.lock LICENSE scripts/source.sh dist/
           git rev-parse HEAD > dist/source-commit.txt
           xcodebuild -version > dist/xcode-version.txt
