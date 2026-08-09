@@ -56,6 +56,11 @@ get_library_source() {
     SOURCE_ID="5.2.2"
     SOURCE_TYPE="TAG"
     ;;
+  gas-preprocessor)
+    SOURCE_REPO_URL="https://github.com/arthenica/gas-preprocessor"
+    SOURCE_ID="d09971fad329d32df19f5bbafe88cf2f0ed04ed7"
+    SOURCE_TYPE="COMMIT"
+    ;;
   gmp)
     SOURCE_REPO_URL="https://github.com/arthenica/gmp"
     SOURCE_ID="v6.3.0"

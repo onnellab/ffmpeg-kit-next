@@ -364,10 +364,22 @@ get_ldflags() {
 
 set_toolchain_paths() {
   if [ ! -f "${FFMPEG_KIT_TMPDIR}/gas-preprocessor.pl" ]; then
-    DOWNLOAD_RESULT=$(download "https://github.com/arthenica/gas-preprocessor/raw/d09971fad329d32df19f5bbafe88cf2f0ed04ed7/gas-preprocessor.pl" "gas-preprocessor.pl" "exit")
-    if [[ ${DOWNLOAD_RESULT} -ne 0 ]]; then
-      exit 1
+    local GAS_PREPROCESSOR_SOURCE="${FFMPEG_KIT_TMPDIR}/source/gas-preprocessor"
+    local GAS_PREPROCESSOR_REPOSITORY
+    local GAS_PREPROCESSOR_REVISION
+    GAS_PREPROCESSOR_REPOSITORY=$(get_library_source "gas-preprocessor" 1)
+    GAS_PREPROCESSOR_REVISION=$(get_library_source "gas-preprocessor" 2)
+    if [[ ! -d "${GAS_PREPROCESSOR_SOURCE}/.git" ]]; then
+      DOWNLOAD_RESULT=$(clone_git_repository_with_commit_id \
+        "${GAS_PREPROCESSOR_REPOSITORY}" \
+        "${GAS_PREPROCESSOR_SOURCE}" \
+        "${GAS_PREPROCESSOR_REVISION}")
+      if [[ ${DOWNLOAD_RESULT} -ne 0 ]]; then
+        return 1
+      fi
     fi
+    cp "${GAS_PREPROCESSOR_SOURCE}/gas-preprocessor.pl" \
+      "${FFMPEG_KIT_TMPDIR}/gas-preprocessor.pl" || return 1
     (chmod +x "${FFMPEG_KIT_TMPDIR}"/gas-preprocessor.pl 1>>"${BASEDIR}"/build.log 2>&1) || return 1
 
     # patch gas-preprocessor.pl against the following warning

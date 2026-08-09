@@ -25,6 +25,7 @@ jobs:
           set -euo pipefail
           tools/apple/test-source-pin-routing.sh
           tools/apple/test-ffmpeg-version-helpers.sh
+          tools/apple/test-ios-audio-compliance-contract.sh
           tools/apple/test-dsym-lifecycle.sh
           nix develop .#xcode26 -c bash -c 'command -v autogen'
 
@@ -87,7 +88,18 @@ jobs:
           sw_vers > dist/macos-version.txt
           xcrun --sdk iphoneos --show-sdk-version > dist/iphoneos-sdk-version.txt
           ditto -c -k --sequesterRsrc --keepParent "${bundle_dir}" dist/ffmpeg-kit-next-8.1.1-audio-ios-dsyms.zip
+          tools/apple/package-ios-audio-compliance.sh src .tmp "${bundle_dir}" dist/ffmpeg-kit-next-8.1.1-audio-source
+          ditto -c -k --sequesterRsrc --keepParent dist/ffmpeg-kit-next-8.1.1-audio-source dist/ffmpeg-kit-next-8.1.1-audio-source.zip
           shasum -a 256 dist/ffmpeg-kit-next-8.1.1-audio-ios-dsyms.zip > dist/SHA256SUMS
+          shasum -a 256 dist/ffmpeg-kit-next-8.1.1-audio-source.zip >> dist/SHA256SUMS
+          {
+            echo "source_commit=$(git rev-parse HEAD)"
+            echo "ci_run_url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "xcode=$(tr '\n' ' ' < dist/xcode-version.txt)"
+            echo "iphoneos_sdk=$(cat dist/iphoneos-sdk-version.txt)"
+            cat dist/SHA256SUMS
+          } > dist/PROVENANCE.txt
+          cp dist/ffmpeg-kit-next-8.1.1-audio-source/UUID-MANIFEST.tsv dist/
 
       - name: Upload verified artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
