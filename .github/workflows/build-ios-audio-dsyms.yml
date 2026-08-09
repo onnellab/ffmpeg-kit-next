@@ -24,6 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           tools/apple/test-source-pin-routing.sh
+          tools/apple/test-ffmpeg-version-helpers.sh
           tools/apple/test-dsym-lifecycle.sh
           nix develop .#xcode26 -c bash -c 'command -v autogen'
 
