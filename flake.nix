@@ -416,10 +416,10 @@
             then "linux-${linuxArchName pkgs}-glibc-${pkgs.lib.replaceStrings [ "." ] [ "_" ] (builtins.head (pkgs.lib.splitString "-" pkgs.glibc.version))}"
             else null;
           xcode26Shell = pkgs.mkShellNoCC {
-            packages = commonPackages pkgs;
+            packages = commonPackages pkgs ++ [ pkgs.autogen ];
 
             shellHook = ''
-              export PATH="${pkgs.lib.makeBinPath (commonPackages pkgs)}:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+              export PATH="${pkgs.lib.makeBinPath (commonPackages pkgs ++ [ pkgs.autogen ])}:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
               export ACLOCAL_PATH="${pkgs.gettext}/share/aclocal:$ACLOCAL_PATH"
               ${pkgConfigShellHook pkgs}
 

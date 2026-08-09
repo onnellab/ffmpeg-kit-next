@@ -21,7 +21,10 @@ jobs:
 
       - name: Verify immutable source routing
         shell: bash
-        run: tools/apple/test-source-pin-routing.sh
+        run: |
+          set -euo pipefail
+          tools/apple/test-source-pin-routing.sh
+          nix develop .#xcode26 -c bash -c 'command -v autogen'
 
       - name: Build the Melivra audio profile
         shell: bash
