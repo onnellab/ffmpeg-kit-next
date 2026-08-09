@@ -696,6 +696,16 @@ ${SED_INLINE} "s|\$(LD_PATH)lib%|-F ${FFMPEG_LIBRARY_PATH}/framework|g" ${BASEDI
 
 # BUILD FRAMEWORKS AS DYNAMIC LIBRARIES
 build_ffmpeg
+
+if [[ -n ${FFMPEG_KIT_DSYM_BUILD:-} ]]; then
+  for FFMPEG_LIB in "${FFMPEG_LIBS[@]}"; do
+    "${BASEDIR}/tools/apple/capture-thin-dsym.sh" \
+      "${BASEDIR}/src/ffmpeg/${FFMPEG_LIB}/${FFMPEG_LIB}.$(get_ffmpeg_library_version "${FFMPEG_LIB}").dylib" \
+      "${BASEDIR}/prebuilt/apple-thin-dsyms/${FULL_ARCH}/${FFMPEG_LIB}.dSYM" \
+      1>>"${BASEDIR}"/build.log 2>&1 || exit 1
+  done
+fi
+
 install_ffmpeg
 
 # MANUALLY ADD REQUIRED HEADERS

@@ -71,6 +71,24 @@ for framework_name in ${expected_frameworks}; do
         echo "error: no DWARF compile unit for ${binary_arch} in ${dsym}" >&2
         exit 1
       fi
+
+      symbolicated=0
+      while read -r symbol_address symbol_kind symbol_name; do
+        if [[ "${symbol_kind}" != "T" || -z "${symbol_address}" ]]; then
+          continue
+        fi
+        if xcrun dwarfdump --arch="${binary_arch}" --lookup "0x${symbol_address}" "${dsym}" 2>/dev/null |
+          grep -Eq 'Line info: file .+, line [1-9][0-9]*'; then
+          echo "verified ${framework_name} ${binary_arch} file:line symbolication for ${symbol_name}"
+          symbolicated=1
+          break
+        fi
+      done < <(xcrun nm -arch "${binary_arch}" -n "${binary}")
+
+      if [[ ${symbolicated} -ne 1 ]]; then
+        echo "error: no exported symbol resolves to file:line for ${binary_arch} in ${dsym}" >&2
+        exit 1
+      fi
     done
 
     build_info="$(xcrun vtool -show-build "${binary}")"

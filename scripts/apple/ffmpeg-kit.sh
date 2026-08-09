@@ -84,6 +84,13 @@ fi
 
 make -j$(get_cpu_count) 1>>"${BASEDIR}"/build.log 2>&1
 
+if [[ -n ${FFMPEG_KIT_DSYM_BUILD:-} ]]; then
+  "${BASEDIR}/tools/apple/capture-thin-dsym.sh" \
+    "${BASEDIR}/apple/src/.libs/libffmpegkit.0.dylib" \
+    "${BASEDIR}/prebuilt/apple-thin-dsyms/${FULL_ARCH}/ffmpegkit.dSYM" \
+    1>>"${BASEDIR}"/build.log 2>&1 || exit 1
+fi
+
 make install 1>>"${BASEDIR}"/build.log 2>&1
 
 if [ $? -eq 0 ]; then
