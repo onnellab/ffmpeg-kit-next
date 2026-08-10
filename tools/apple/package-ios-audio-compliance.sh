@@ -75,7 +75,7 @@ archive_repository() {
     "${output_directory}/sources/${name}-${actual_revision}.bundle" >/dev/null
 
   license_paths="$(git -C "${path}" ls-tree -r --name-only HEAD | \
-    rg "${inventory_pattern}" || true)"
+    grep -E "${inventory_pattern}" || true)"
   [[ -n "${license_paths}" ]] || {
     echo "error: ${name} contains no license or notice material" >&2
     exit 1

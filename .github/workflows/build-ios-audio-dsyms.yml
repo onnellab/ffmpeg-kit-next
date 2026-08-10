@@ -75,7 +75,7 @@ jobs:
           test -n "${bundle_dir}"
           tools/apple/verify-xcframework-dsyms.sh "${bundle_dir}"
 
-          if rg -n -- '--enable-(gpl|nonfree)|enable-(x264|x265|xvidcore|libvidstab|rubberband)' build.log; then
+          if grep -En -- '--enable-(gpl|nonfree)|enable-(x264|x265|xvidcore|libvidstab|rubberband)' build.log; then
             echo 'error: GPL or non-free configuration detected' >&2
             exit 1
           fi

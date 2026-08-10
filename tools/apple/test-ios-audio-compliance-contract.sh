@@ -70,7 +70,7 @@ while IFS=$'\t' read -r component source_url revision license; do
   }
 done < "${manifest}"
 
-rg -q 'same GitHub release page' "${script_directory}/IOS_AUDIO_SOURCE_OFFER.md"
-rg -q 'reverse engineer' "${script_directory}/IOS_AUDIO_SOURCE_OFFER.md"
+grep -q 'same GitHub release page' "${script_directory}/IOS_AUDIO_SOURCE_OFFER.md"
+grep -q 'reverse engineer' "${script_directory}/IOS_AUDIO_SOURCE_OFFER.md"
 
 echo "verified immutable iOS audio source and notice contract"
